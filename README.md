@@ -40,6 +40,20 @@ O arquivo consumer.ts é responsável por se inscrever em uma categoria específ
 - 1. O auditor se conecta ao mesmo exchange usado pelo consumidor.
 - 2. O script exibe a chave de roteamento e o conteúdo de cada mensagem recebida, permitindo uma visualização global do fluxo de mensagens.
 
+## Auditoria (Auditor)
+
+O arquivo auditor.ts implementa o backend de auditoria, que escuta todas as mensagens publicadas na exchange. Este componente utiliza a routing key # (curinga), garantindo o recebimento de todas as mensagens sem filtragem.
+
+- Como executar:
+```bash
+   ts-node src/auditor.ts
+```
+
+- Funcionamento:
+- 1. Conecta-se à mesma exchange utilizada pelos demais componentes.
+- 2. Cria uma fila temporária exclusiva com binding usando a routing key #.
+- 3. Exibe no console a chave de roteamento e o conteúdo de cada mensagem, permitindo a visualização completa do fluxo.
+
 ## Produtor (Producer em Java)
 
 O arquivo Producer.java permite o envio de mensagens para diferentes categorias. Durante a execução, o programa solicita:
