@@ -3,7 +3,7 @@ import readline from "readline";
 
 const RABBITMQ_URL =
   "amqps://lqvkncly:48o3Ep9zxuNlcKdFAmXnNzZS6JeN4L2p@jackal.rmq.cloudamqp.com/lqvkncly";
-const EXCHANGE_NAME = "streaming_topic";
+const EXCHANGE_NAME = "streaming_topic_2";
 
 const categoriasValidas = [
   "filme",
@@ -18,29 +18,26 @@ async function startConsumer(categoria: string) {
     const connection = await amqp.connect(RABBITMQ_URL);
     const channel = await connection.createChannel();
 
-    await channel.assertExchange(EXCHANGE_NAME, "topic", { durable: false });
+    await channel.assertExchange(EXCHANGE_NAME, "topic", { durable: true });
 
-    const q = await channel.assertQueue("", { exclusive: true });
+    const queueName = `fila_${categoria}`;
+    const q = await channel.assertQueue(queueName, { durable: true });
 
     await channel.bindQueue(q.queue, EXCHANGE_NAME, categoria);
 
     console.log(`\n[✔] Aguardando mensagens da categoria '${categoria}'`);
-    channel.consume(
-      q.queue,
-      (msg) => {
-        if (msg?.content) {
-          const mensagem = msg.content.toString();
-          console.log(`[📥] Mensagem recebida: ${mensagem}`);
-        }
-      },
-      { noAck: true }
-    );
+    channel.consume(q.queue, (msg) => {
+      if (msg?.content) {
+        const mensagem = msg.content.toString();
+        console.log(`[📥] Mensagem recebida: ${mensagem}`);
+        channel.ack(msg);
+      }
+    });
   } catch (err) {
     console.error("[❌] Erro ao conectar:", err);
   }
 }
 
-// Leitura do terminal
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
