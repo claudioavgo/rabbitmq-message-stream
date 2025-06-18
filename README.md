@@ -1,65 +1,125 @@
-# Projeto com RabbitMQ
+# 📡 RabbitMQ Message Stream
 
-Este projeto demonstra um exemplo simples de envio e recepção de mensagens utilizando RabbitMQ. O projeto é composto por três componentes:
+A modular messaging system that demonstrates how to use **RabbitMQ** for publishing and consuming categorized messages.  
+Built with **Java** and **TypeScript**, this project includes:
 
-- **Consumidor (Consumer):** Se inscreve em uma categoria específica para receber mensagens.
-- **Auditoria (Auditor):** Escuta todas as mensagens enviadas no sistema, permitindo acompanhar o fluxo completo.
-- **Produtor (Producer):** Permite o envio de mensagens para uma categoria específica por meio de um programa em Java.
+- **Producer** (Java): Sends categorized messages to a RabbitMQ exchange.
+- **Consumer** (TypeScript): Subscribes to a specific category (routing key) and receives relevant messages.
+- **Auditor** (TypeScript): Listens to all messages across categories using a wildcard routing key for full system visibility.
 
-# Requisitos
+---
 
-- **Node.js:** Necessário para executar os scripts TypeScript (versão 10 ou superior).
-- **TypeScript:** Caso queira compilar os arquivos manualmente (opcional, pois usaremos o ts-node).
-- **ts-node:** Permite executar arquivos TypeScript diretamente, sem necessidade de pré-compilação.
-- **Java:** Necessário para compilar e executar o produtor (recomenda-se o Java 8 ou superior).
-- **RabbitMQ:** Neste projeto, utiliza-se o [CloudAMQP](https://www.cloudamqp.com/). A URL de conexão e o nome do *exchange* já estão configurados no código.
+## 📦 Project Structure
 
-# Instalação
-
-## Dependências para os Scripts TypeScript (Consumidor e Auditor)
-
-1. Instale o [Node.js](https://nodejs.org/).
-2. No diretório do projeto, instale as dependências necessárias:
-   ```bash
-   npm install amqplib readline ts-node typescript --save-dev
-   ```
-3. **amqplib e readline:** Utilizados pelos scripts em Node.js.
-4. **ts-node e typescript:** Permitem a execução e compilação de arquivos .ts.
-
-# Execução
-
-## Consumidor (Consumer)
-
-O arquivo consumer.ts é responsável por se inscrever em uma categoria específica e receber mensagens correspondentes.
-
-- Como executar:
-```bash
-   ts-node src/consumer.ts
-```
-- Funcionamento:
-- 1. O auditor se conecta ao mesmo exchange usado pelo consumidor.
-- 2. O script exibe a chave de roteamento e o conteúdo de cada mensagem recebida, permitindo uma visualização global do fluxo de mensagens.
-
-## Auditoria (Auditor)
-
-O arquivo auditor.ts implementa o backend de auditoria, que escuta todas as mensagens publicadas na exchange. Este componente utiliza a routing key # (curinga), garantindo o recebimento de todas as mensagens sem filtragem.
-
-- Como executar:
-```bash
-   ts-node src/auditor.ts
 ```
 
-- Funcionamento:
-- 1. Conecta-se à mesma exchange utilizada pelos demais componentes.
-- 2. Cria uma fila temporária exclusiva com binding usando a routing key #.
-- 3. Exibe no console a chave de roteamento e o conteúdo de cada mensagem, permitindo a visualização completa do fluxo.
+rabbitmq-message-stream/
+├── src/
+│   ├── consumer.ts    # Node.js consumer for specific categories
+│   ├── auditor.ts     # Node.js auditor that listens to all messages
+├── java/
+│   └── Producer.java  # Java-based message producer
+├── README.md
+└── package.json
 
-## Produtor (Producer em Java)
+````
 
-O arquivo Producer.java permite o envio de mensagens para diferentes categorias. Durante a execução, o programa solicita:
+## ✅ Requirements
 
-- Seu nome (identificando o produtor).
-- A escolha da categoria (ex.: Filme, Série, Documentário, Reality Show, Anime/Desenho).
-- A mensagem a ser enviada.
+### System
 
-Após a entrada dos dados, o produtor formata a mensagem (incluindo data/hora e o nome do produtor) e a envia para o RabbitMQ com a chave de roteamento correspondente à categoria selecionada.
+- [Node.js](https://nodejs.org/) (v10+)
+- [Java](https://www.oracle.com/java/technologies/javase-downloads.html) (Java 8+)
+- [RabbitMQ](https://www.cloudamqp.com/) (using [CloudAMQP](https://www.cloudamqp.com/) as the broker)
+
+### Node.js Dependencies
+
+```bash
+npm install amqplib readline ts-node typescript --save-dev
+````
+
+> `amqplib`: AMQP client library
+> `readline`: Used for terminal input
+> `ts-node` & `typescript`: For executing `.ts` scripts directly
+
+---
+
+## 🚀 How to Run
+
+### 1. Consumer
+
+Subscribes to a specific message category.
+
+```bash
+ts-node src/consumer.ts
+```
+
+* Connects to the same RabbitMQ exchange as the producer.
+* Displays incoming messages for the selected routing key (e.g., `anime`, `movie`, etc.).
+
+---
+
+### 2. Auditor
+
+Receives **all messages** from the exchange, regardless of category.
+
+```bash
+ts-node src/auditor.ts
+```
+
+* Binds a temporary queue to the exchange with routing key `#`.
+* Useful for debugging, monitoring, and auditing the entire message stream.
+
+---
+
+### 3. Producer (Java)
+
+Sends categorized messages to the exchange.
+
+#### Steps:
+
+1. Navigate to the `java/` folder.
+2. Compile and run the producer:
+
+```bash
+javac Producer.java
+java Producer
+```
+
+3. During execution, you will be prompted to:
+
+* Enter your name
+* Select a category (e.g., Movie, Series, Documentary, Reality Show, Anime/Cartoon)
+* Enter your message
+
+The message is formatted with your name and timestamp, then sent using a routing key based on the selected category.
+
+---
+
+## 🌐 Exchange Configuration
+
+This project uses a pre-configured **direct exchange** on [CloudAMQP](https://www.cloudamqp.com/).
+The connection URL and exchange name are already embedded in the code. To change the broker, update the following in each component:
+
+* `amqp.connect(...)`: Update with your own AMQP URL.
+* Exchange name (typically `"direct_logs"` or similar).
+
+---
+
+## 🛡️ Notes
+
+* The auditor uses a wildcard routing key (`#`) to listen to every message routed through the exchange.
+* For production-grade systems, consider using persistent queues and proper message acknowledgment.
+
+---
+
+## 👤 Author
+
+**Cláudio Alves Gonçalves de Oliveira**
+Email: [hi@claudioav.com](mailto:hi@claudioav.com)
+
+---
+
+## 📃 License
+
+This project is licensed under the MIT License.
